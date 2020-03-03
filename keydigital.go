@@ -20,7 +20,8 @@ var (
 	_defaultDelay = 100 * time.Millisecond
 )
 
-func CreateVideoSwitcher(ctx context.Context, addr string) *KeyDigitalVideoSwitcher {
+func CreateVideoSwitcher(ctx context.Context, addr string) (*KeyDigitalVideoSwitcher, error) {
+	var err error
 
 	p := &KeyDigitalVideoSwitcher{
 		Address: addr,
@@ -54,5 +55,9 @@ func CreateVideoSwitcher(ctx context.Context, addr string) *KeyDigitalVideoSwitc
 		return conn, err
 	}
 
-	return p
+	if err != nil {
+		return p, err
+	}
+
+	return p, nil
 }
