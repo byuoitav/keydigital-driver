@@ -20,61 +20,17 @@ var (
 	_defaultDelay = 100 * time.Millisecond
 )
 
-type options struct {
-	ttl   time.Duration
-	delay time.Duration
-}
-
-type Option interface {
-	apply(*options)
-}
-
-type optionFunc func(*options)
-
-func (f optionFunc) apply(o *options) {
-	f(o)
-}
-
-func WithTTL(t time.Duration) Option {
-	return optionFunc(func(o *options) {
-		o.ttl = t
-	})
-}
-
-func WithDelay(t time.Duration) Option {
-	return optionFunc(func(o *options) {
-		o.delay = t
-	})
-}
-
-func NewVideoSwitcher(addr string, opts ...Option) *KeyDigitalVideoSwitcher {
-	options := options{
-		ttl:   _defaultTTL,
-		delay: _defaultDelay,
-	}
-
-	for _, o := range opts {
-		o.apply(&options)
-	}
+func CreateVideoSwitcher(ctx context.Context, addr string) *KeyDigitalVideoSwitcher {
 
 	p := &KeyDigitalVideoSwitcher{
 		Address: addr,
 		Pool: &connpool.Pool{
-			TTL:   options.ttl,
-			Delay: options.delay,
+			TTL:   _defaultTTL,
+			Delay: _defaultDelay,
 		},
 	}
 
 	p.Pool.NewConnection = func(ctx context.Context) (net.Conn, error) {
-		// addr, err := net.ResolveTCPAddr("tcp", addr+":23")
-		// if err != nil {
-		// 	return nil, err
-		// }
-
-		// conn, err := net.DialTCP("tcp", nil, addr)
-		// if err != nil {
-		// 	return nil, err
-		// }
 
 		dial := net.Dialer{}
 		conn, err := dial.DialContext(ctx, "tcp", p.Address+":3629")
