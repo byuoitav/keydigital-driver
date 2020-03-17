@@ -30,7 +30,7 @@ func CreateVideoSwitcher(ctx context.Context, addr string) (*KeyDigitalVideoSwit
 			Delay: _defaultDelay,
 			NewConnection: func(ctx context.Context) (net.Conn, error) {
 				dial := net.Dialer{}
-				return dial.DialContext(ctx, "tcp", addr+":3629")
+				return dial.DialContext(ctx, "tcp", addr+":23")
 			},
 		},
 	}

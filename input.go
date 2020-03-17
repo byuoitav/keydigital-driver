@@ -13,8 +13,7 @@ import (
 
 var (
 	ErrOutOfRange = errors.New("input or output is out of range")
-
-	regGetInput = regexp.MustCompile("Video Output : Input = ([0-9]{2}),")
+	regGetInput   = regexp.MustCompile("Video Output : Input = ([0-9]{2}),")
 )
 
 // GetInputByOutput .
@@ -22,6 +21,7 @@ func (vs *KeyDigitalVideoSwitcher) GetInputByOutput(ctx context.Context, output 
 	var input string
 
 	err := vs.Pool.Do(ctx, func(conn connpool.Conn) error {
+
 		cmd := []byte("STA\r\n")
 		n, err := conn.Write(cmd)
 		switch {
@@ -31,19 +31,22 @@ func (vs *KeyDigitalVideoSwitcher) GetInputByOutput(ctx context.Context, output 
 			return fmt.Errorf("failed to write to connection: wrote %v/%v bytes", n, len(cmd))
 		}
 
-		// TODO figure out what we need to read until
-		buf, err := conn.ReadUntil(carriageReturn, 3*time.Second)
-		if err != nil {
-			return fmt.Errorf("failed to read from connection: %w", err)
+		// TODO fig
+		var match [][]string
+		for len(match) == 0 {
+			c, err := conn.ReadUntil(carriageReturn, 3*time.Second)
+			if err != nil {
+				return fmt.Errorf("failed to read from connection: %w", err)
+			}
+
+			match = regGetInput.FindAllStringSubmatch(string(c), -1)
 		}
 
-		match := regGetInput.FindAllStringSubmatch(string(buf), -1)
-
-		// TODO make sure one exists
-		input := match[0][1]
+		input = match[0][1]
 		input = input[1:]
 		return nil
 	})
+
 	if err != nil {
 		return "", err
 	}

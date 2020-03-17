@@ -20,6 +20,7 @@ var (
 func (vs *KeyDigitalVideoSwitcher) GetHardwareInfo(ctx context.Context) (structs.HardwareInfo, error) {
 	var resp structs.HardwareInfo
 
+	vs.Pool.Logger.Infof("getting hardware info")
 	err := vs.Pool.Do(ctx, func(conn connpool.Conn) error {
 		cmd := []byte("STA\r\n")
 		n, err := conn.Write(cmd)
@@ -30,27 +31,37 @@ func (vs *KeyDigitalVideoSwitcher) GetHardwareInfo(ctx context.Context) (structs
 			return fmt.Errorf("failed to write to connection: wrote %v/%v bytes", n, len(cmd))
 		}
 
-		// TODO figure out what we need to read until
-		buf, err := conn.ReadUntil(carriageReturn, 3*time.Second)
-		if err != nil {
-			return fmt.Errorf("failed to read from connection: %w", err)
+		var match [][]string
+		for len(match) == 0 {
+			buf, err := conn.ReadUntil(carriageReturn, 3*time.Second)
+			if err != nil {
+				return fmt.Errorf("failed to read from connection: %w", err)
+			}
+
+			// TODO make sure match[0] exists (and match[0][1])
+
+			// Mac Address
+			match = regMacAddr.FindAllStringSubmatch(string(buf), -1)
+			if len(match) >= 1 {
+				resp.NetworkInfo.MACAddress = match[0][1]
+			}
+
+			// Version
+			match = regVersion.FindAllStringSubmatch(string(buf), -1)
+			if len(match) >= 1 {
+				resp.FirmwareVersion = match[0][1]
+			}
+
+			// IP Address
+			match = regIPAddr.FindAllStringSubmatch(string(buf), -1)
+			if len(match) >= 1 {
+				resp.NetworkInfo.IPAddress = match[0][1]
+			}
 		}
-
-		// TODO make sure match[0] exists (and match[0][1])
-		// IP Address
-		match := regIPAddr.FindAllStringSubmatch(string(buf), -1)
-		resp.NetworkInfo.IPAddress = match[0][1]
-
-		// Mac Address
-		match = regMacAddr.FindAllStringSubmatch(string(buf), -1)
-		resp.NetworkInfo.MACAddress = match[0][1]
-
-		// Version
-		match = regVersion.FindAllStringSubmatch(string(buf), -1)
-		resp.FirmwareVersion = match[0][1]
 
 		return nil
 	})
+
 	if err != nil {
 		return resp, err
 	}
@@ -61,5 +72,6 @@ func (vs *KeyDigitalVideoSwitcher) GetHardwareInfo(ctx context.Context) (structs
 //GetInfo .
 func (vs *KeyDigitalVideoSwitcher) GetInfo(ctx context.Context) (interface{}, error) {
 	var info interface{}
+	vs.Pool.Logger.Infof("getting info")
 	return info, fmt.Errorf("not currently implemented")
 }
