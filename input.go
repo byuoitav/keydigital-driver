@@ -31,7 +31,6 @@ func (vs *KeyDigitalVideoSwitcher) GetInputByOutput(ctx context.Context, output 
 			return fmt.Errorf("failed to write to connection: wrote %v/%v bytes", n, len(cmd))
 		}
 
-		// TODO fig
 		var match [][]string
 		for len(match) == 0 {
 			c, err := conn.ReadUntil(carriageReturn, 3*time.Second)
