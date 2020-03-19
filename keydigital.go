@@ -8,7 +8,7 @@ import (
 	"github.com/byuoitav/connpool"
 )
 
-type KeyDigitalVideoSwitcher struct {
+type VideoSwitcher struct {
 	Address string
 	Pool    *connpool.Pool
 }
@@ -22,8 +22,8 @@ var (
 	_defaultDelay = 250 * time.Millisecond
 )
 
-func CreateVideoSwitcher(ctx context.Context, addr string) (*KeyDigitalVideoSwitcher, error) {
-	p := &KeyDigitalVideoSwitcher{
+func CreateVideoSwitcher(ctx context.Context, addr string) (*VideoSwitcher, error) {
+	p := &VideoSwitcher{
 		Address: addr,
 		Pool: &connpool.Pool{
 			TTL:   _defaultTTL,

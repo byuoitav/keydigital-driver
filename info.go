@@ -17,7 +17,7 @@ var (
 )
 
 //GetHardwareInfo .
-func (vs *KeyDigitalVideoSwitcher) GetHardwareInfo(ctx context.Context) (structs.HardwareInfo, error) {
+func (vs *VideoSwitcher) GetHardwareInfo(ctx context.Context) (structs.HardwareInfo, error) {
 	var resp structs.HardwareInfo
 
 	vs.Pool.Logger.Infof("getting hardware info")
@@ -70,7 +70,7 @@ func (vs *KeyDigitalVideoSwitcher) GetHardwareInfo(ctx context.Context) (structs
 }
 
 //GetInfo .
-func (vs *KeyDigitalVideoSwitcher) GetInfo(ctx context.Context) (interface{}, error) {
+func (vs *VideoSwitcher) GetInfo(ctx context.Context) (interface{}, error) {
 	var info interface{}
 	vs.Pool.Logger.Infof("getting info")
 	return info, fmt.Errorf("not currently implemented")

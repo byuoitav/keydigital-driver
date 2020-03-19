@@ -17,24 +17,30 @@ var (
 )
 
 // GetInputByOutput .
-func (vs *KeyDigitalVideoSwitcher) GetInputByOutput(ctx context.Context, output string) (string, error) {
+func (vs *VideoSwitcher) GetInputByOutput(ctx context.Context, output string) (string, error) {
 	var input string
+	vs.Pool.Logger.Infof("getting the current input")
 
 	err := vs.Pool.Do(ctx, func(conn connpool.Conn) error {
+
+		vs.Pool.Logger.Infof("writing to the connection")
 
 		cmd := []byte("STA\r\n")
 		n, err := conn.Write(cmd)
 		switch {
 		case err != nil:
+			vs.Pool.Logger.Warnf("failed to write to connection")
 			return fmt.Errorf("failed to write to connection: %w", err)
 		case n != len(cmd):
 			return fmt.Errorf("failed to write to connection: wrote %v/%v bytes", n, len(cmd))
 		}
 
+		vs.Pool.Logger.Infof("reading from hte connection")
 		var match [][]string
 		for len(match) == 0 {
 			c, err := conn.ReadUntil(carriageReturn, 3*time.Second)
 			if err != nil {
+				vs.Pool.Logger.Warnf("failed to read from connection")
 				return fmt.Errorf("failed to read from connection: %w", err)
 			}
 
@@ -50,13 +56,18 @@ func (vs *KeyDigitalVideoSwitcher) GetInputByOutput(ctx context.Context, output 
 		return "", err
 	}
 
+	vs.Pool.Logger.Infof(fmt.Sprintf("returning input - current input: %s", input))
+
 	return input, nil
 
 }
 
 // SetInputByOutput .
-func (vs *KeyDigitalVideoSwitcher) SetInputByOutput(ctx context.Context, output, input string) error {
+func (vs *VideoSwitcher) SetInputByOutput(ctx context.Context, output, input string) error {
 	return vs.Pool.Do(ctx, func(conn connpool.Conn) error {
+
+		vs.Pool.Logger.Infof(fmt.Sprintf("writing command to change input - change to input: %s", input))
+
 		cmd := []byte(fmt.Sprintf("SPO0%sSI0%s\r\n", output, input))
 		n, err := conn.Write(cmd)
 		switch {
@@ -66,6 +77,8 @@ func (vs *KeyDigitalVideoSwitcher) SetInputByOutput(ctx context.Context, output,
 			return fmt.Errorf("failed to write to connection: wrote %v/%v bytes", n, len(cmd))
 		}
 
+		vs.Pool.Logger.Infof("reading from connection to see if there was an error")
+
 		buf, err := conn.ReadUntil(carriageReturn, 3*time.Second)
 		if err != nil {
 			return fmt.Errorf("failed to read from connection: %w", err)
@@ -74,6 +87,8 @@ func (vs *KeyDigitalVideoSwitcher) SetInputByOutput(ctx context.Context, output,
 		if strings.Contains(string(buf), "FAILED") {
 			return ErrOutOfRange
 		}
+
+		vs.Pool.Logger.Infof(fmt.Sprintf("successfully changed the input - current input: %s", input))
 
 		return nil
 	})
