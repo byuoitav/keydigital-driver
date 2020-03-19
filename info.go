@@ -20,7 +20,10 @@ var (
 func (vs *VideoSwitcher) GetHardwareInfo(ctx context.Context) (structs.HardwareInfo, error) {
 	var resp structs.HardwareInfo
 
-	vs.Pool.Logger.Infof("getting hardware info")
+	if vs.Pool.Logger != nil {
+		vs.Pool.Logger.Infof("getting hardware info")
+	}
+
 	err := vs.Pool.Do(ctx, func(conn connpool.Conn) error {
 		cmd := []byte("STA\r\n")
 		n, err := conn.Write(cmd)
@@ -72,6 +75,10 @@ func (vs *VideoSwitcher) GetHardwareInfo(ctx context.Context) (structs.HardwareI
 //GetInfo .
 func (vs *VideoSwitcher) GetInfo(ctx context.Context) (interface{}, error) {
 	var info interface{}
-	vs.Pool.Logger.Infof("getting info")
+
+	if vs.Pool.Logger != nil {
+		vs.Pool.Logger.Infof("getting info")
+	}
+
 	return info, fmt.Errorf("not currently implemented")
 }

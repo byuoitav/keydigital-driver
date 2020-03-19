@@ -22,7 +22,7 @@ var (
 	_defaultDelay = 250 * time.Millisecond
 )
 
-func CreateVideoSwitcher(ctx context.Context, addr string) (*VideoSwitcher, error) {
+func CreateVideoSwitcher(ctx context.Context, addr string, log connpool.Logger) (*VideoSwitcher, error) {
 	p := &VideoSwitcher{
 		Address: addr,
 		Pool: &connpool.Pool{
@@ -32,6 +32,7 @@ func CreateVideoSwitcher(ctx context.Context, addr string) (*VideoSwitcher, erro
 				dial := net.Dialer{}
 				return dial.DialContext(ctx, "tcp", addr+":23")
 			},
+			Logger: log,
 		},
 	}
 

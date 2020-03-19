@@ -19,7 +19,10 @@ var (
 // GetInputByOutput .
 func (vs *VideoSwitcher) GetInputByOutput(ctx context.Context, output string) (string, error) {
 	var input string
-	vs.Pool.Logger.Infof("getting the current input")
+
+	if vs.Pool.Logger != nil {
+		vs.Pool.Logger.Infof("getting the current input")
+	}
 
 	err := vs.Pool.Do(ctx, func(conn connpool.Conn) error {
 
@@ -35,7 +38,7 @@ func (vs *VideoSwitcher) GetInputByOutput(ctx context.Context, output string) (s
 			return fmt.Errorf("failed to write to connection: wrote %v/%v bytes", n, len(cmd))
 		}
 
-		vs.Pool.Logger.Infof("reading from hte connection")
+		vs.Pool.Logger.Infof("reading from the connection")
 		var match [][]string
 		for len(match) == 0 {
 			c, err := conn.ReadUntil(carriageReturn, 3*time.Second)
@@ -56,7 +59,9 @@ func (vs *VideoSwitcher) GetInputByOutput(ctx context.Context, output string) (s
 		return "", err
 	}
 
-	vs.Pool.Logger.Infof(fmt.Sprintf("returning input - current input: %s", input))
+	if vs.Pool.Logger != nil {
+		vs.Pool.Logger.Infof(fmt.Sprintf("returning input - current input: %s", input))
+	}
 
 	return input, nil
 
@@ -66,7 +71,9 @@ func (vs *VideoSwitcher) GetInputByOutput(ctx context.Context, output string) (s
 func (vs *VideoSwitcher) SetInputByOutput(ctx context.Context, output, input string) error {
 	return vs.Pool.Do(ctx, func(conn connpool.Conn) error {
 
-		vs.Pool.Logger.Infof(fmt.Sprintf("writing command to change input - change to input: %s", input))
+		if vs.Pool.Logger != nil {
+			vs.Pool.Logger.Infof(fmt.Sprintf("writing command to change input - change to input: %s", input))
+		}
 
 		cmd := []byte(fmt.Sprintf("SPO0%sSI0%s\r\n", output, input))
 		n, err := conn.Write(cmd)
@@ -88,7 +95,9 @@ func (vs *VideoSwitcher) SetInputByOutput(ctx context.Context, output, input str
 			return ErrOutOfRange
 		}
 
-		vs.Pool.Logger.Infof(fmt.Sprintf("successfully changed the input - current input: %s", input))
+		if vs.Pool.Logger != nil {
+			vs.Pool.Logger.Infof(fmt.Sprintf("successfully changed the input - current input: %s", input))
+		}
 
 		return nil
 	})
