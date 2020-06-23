@@ -16,8 +16,10 @@ var (
 	regGetInput   = regexp.MustCompile("Video Output : Input = ([0-9]{2}),")
 )
 
-// GetInputByOutput .
-func (vs *VideoSwitcher) GetInputByOutput(ctx context.Context, output string) (string, error) {
+// GetAudioVideoInputs .
+func (vs *VideoSwitcher) GetAudioVideoInputs(ctx context.Context) (map[string]string, error) {
+	toReturn := make(map[string]string)
+
 	var input string
 
 	if vs.Pool.Logger != nil {
@@ -56,19 +58,22 @@ func (vs *VideoSwitcher) GetInputByOutput(ctx context.Context, output string) (s
 	})
 
 	if err != nil {
-		return "", err
+		return toReturn, err
 	}
 
 	if vs.Pool.Logger != nil {
 		vs.Pool.Logger.Infof(fmt.Sprintf("returning input - current input: %s", input))
 	}
 
-	return input, nil
+	// it looks like this only has one input/output but idk if that's true...
+	toReturn[""] = input
+
+	return toReturn, nil
 
 }
 
-// SetInputByOutput .
-func (vs *VideoSwitcher) SetInputByOutput(ctx context.Context, output, input string) error {
+// SetAudioVideoInput .
+func (vs *VideoSwitcher) SetAudioVideoInput(ctx context.Context, output, input string) error {
 	return vs.Pool.Do(ctx, func(conn connpool.Conn) error {
 
 		if vs.Pool.Logger != nil {
