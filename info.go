@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"time"
 
 	"github.com/byuoitav/common/structs"
 	"github.com/byuoitav/connpool"
@@ -35,8 +34,12 @@ func (vs *VideoSwitcher) GetHardwareInfo(ctx context.Context) (structs.HardwareI
 		}
 
 		var match [][]string
+		deadline, ok := ctx.Deadline()
+		if !ok {
+			return fmt.Errorf("no deadline set")
+		}
 		for len(match) == 0 {
-			buf, err := conn.ReadUntil(carriageReturn, 3*time.Second)
+			buf, err := conn.ReadUntil(carriageReturn, deadline)
 			if err != nil {
 				return fmt.Errorf("failed to read from connection: %w", err)
 			}

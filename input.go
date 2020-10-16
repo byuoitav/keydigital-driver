@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/byuoitav/connpool"
 )
@@ -40,10 +39,15 @@ func (vs *VideoSwitcher) GetAudioVideoInputs(ctx context.Context) (map[string]st
 			return fmt.Errorf("failed to write to connection: wrote %v/%v bytes", n, len(cmd))
 		}
 
+		deadline, ok := ctx.Deadline()
+		if !ok {
+			return fmt.Errorf("no deadline set")
+		}
+
 		vs.Pool.Logger.Infof("reading from the connection")
 		var match [][]string
 		for len(match) == 0 {
-			c, err := conn.ReadUntil(carriageReturn, 3*time.Second)
+			c, err := conn.ReadUntil(carriageReturn, deadline)
 			if err != nil {
 				vs.Pool.Logger.Warnf("failed to read from connection")
 				return fmt.Errorf("failed to read from connection: %w", err)
@@ -91,7 +95,12 @@ func (vs *VideoSwitcher) SetAudioVideoInput(ctx context.Context, output, input s
 
 		vs.Pool.Logger.Infof("reading from connection to see if there was an error")
 
-		buf, err := conn.ReadUntil(carriageReturn, 3*time.Second)
+		deadline, ok := ctx.Deadline()
+		if !ok {
+			return fmt.Errorf("no deadline set")
+		}
+
+		buf, err := conn.ReadUntil(carriageReturn, deadline)
 		if err != nil {
 			return fmt.Errorf("failed to read from connection: %w", err)
 		}
