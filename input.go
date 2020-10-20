@@ -13,7 +13,7 @@ import (
 
 var (
 	ErrOutOfRange = errors.New("input or output is out of range")
-	regGetInput   = regexp.MustCompile("Video Output : Input = ([0-9]{2}),")
+	regGetInput   = regexp.MustCompile("Video Output  *: Input = ([0-9]{2}),")
 )
 
 // GetInputByOutput .
@@ -51,7 +51,7 @@ func (vs *VideoSwitcher) GetInputByOutput(ctx context.Context, output string) (s
 		}
 
 		input = match[0][1]
-		input = input[1:]
+		input = strings.TrimPrefix(input, "0")
 		return nil
 	})
 
