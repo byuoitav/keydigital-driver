@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/byuoitav/connpool"
 )
 
 var (
 	ErrOutOfRange = errors.New("input or output is out of range")
-	regGetInput   = regexp.MustCompile("Video Output : Input = ([0-9]{2}),")
+	regGetInput   = regexp.MustCompile("Video Output  *: Input = ([0-9]{2}),")
 )
 
 // GetAudioVideoInputs .
@@ -41,7 +42,7 @@ func (vs *VideoSwitcher) GetAudioVideoInputs(ctx context.Context) (map[string]st
 
 		deadline, ok := ctx.Deadline()
 		if !ok {
-			return fmt.Errorf("no deadline set")
+			deadline = time.Now().Add(5 * time.Second)
 		}
 
 		vs.Pool.Logger.Infof("reading from the connection")
@@ -57,10 +58,9 @@ func (vs *VideoSwitcher) GetAudioVideoInputs(ctx context.Context) (map[string]st
 		}
 
 		input = match[0][1]
-		input = input[1:]
+		input = strings.TrimPrefix(input, "0")
 		return nil
 	})
-
 	if err != nil {
 		return toReturn, err
 	}
