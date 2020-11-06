@@ -36,7 +36,11 @@ func (vs *VideoSwitcher) GetHardwareInfo(ctx context.Context) (structs.HardwareI
 
 		var match [][]string
 		for len(match) == 0 {
-			buf, err := conn.ReadUntil(carriageReturn, 3*time.Second)
+			deadline, ok := ctx.Deadline()
+			if !ok {
+				deadline = time.Now().Add(10 * time.Second)
+			}
+			buf, err := conn.ReadUntil(carriageReturn, deadline)
 			if err != nil {
 				return fmt.Errorf("failed to read from connection: %w", err)
 			}

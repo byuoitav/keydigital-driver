@@ -41,7 +41,12 @@ func (vs *VideoSwitcher) GetInputByOutput(ctx context.Context, output string) (s
 		vs.Pool.Logger.Infof("reading from the connection")
 		var match [][]string
 		for len(match) == 0 {
-			c, err := conn.ReadUntil(carriageReturn, 3*time.Second)
+			deadline, ok := ctx.Deadline()
+			if !ok {
+				deadline = time.Now().Add(10 * time.Second)
+			}
+
+			c, err := conn.ReadUntil(carriageReturn, deadline)
 			if err != nil {
 				vs.Pool.Logger.Warnf("failed to read from connection")
 				return fmt.Errorf("failed to read from connection: %w", err)
@@ -86,7 +91,12 @@ func (vs *VideoSwitcher) SetInputByOutput(ctx context.Context, output, input str
 
 		vs.Pool.Logger.Infof("reading from connection to see if there was an error")
 
-		buf, err := conn.ReadUntil(carriageReturn, 3*time.Second)
+		deadline, ok := ctx.Deadline()
+		if !ok {
+			deadline = time.Now().Add(10 * time.Second)
+		}
+
+		buf, err := conn.ReadUntil(carriageReturn, deadline)
 		if err != nil {
 			return fmt.Errorf("failed to read from connection: %w", err)
 		}
