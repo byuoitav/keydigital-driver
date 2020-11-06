@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/byuoitav/common/structs"
 	"github.com/byuoitav/connpool"
@@ -36,7 +37,7 @@ func (vs *VideoSwitcher) GetHardwareInfo(ctx context.Context) (structs.HardwareI
 		var match [][]string
 		deadline, ok := ctx.Deadline()
 		if !ok {
-			return fmt.Errorf("no deadline set")
+			deadline = time.Now().Add(10 * time.Second)
 		}
 		for len(match) == 0 {
 			buf, err := conn.ReadUntil(carriageReturn, deadline)

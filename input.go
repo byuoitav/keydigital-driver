@@ -97,7 +97,7 @@ func (vs *VideoSwitcher) SetAudioVideoInput(ctx context.Context, output, input s
 
 		deadline, ok := ctx.Deadline()
 		if !ok {
-			return fmt.Errorf("no deadline set")
+			deadline = time.Now().Add(10 * time.Second)
 		}
 
 		buf, err := conn.ReadUntil(carriageReturn, deadline)
